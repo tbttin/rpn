@@ -26,15 +26,15 @@ main (void)
     fprintf(stderr, "Cant not open file '%s'\n", file_name);
     return 1;
   }
-  char *line = NULL;
+  char *expr = NULL;
   size_t len = 0; /* allocated */
   ssize_t n_read; /* read */
   double r;
-  while ((n_read = getline(&line, &len, fp)) != -1)
+  while ((n_read = getline(&expr, &len, fp)) != -1)
   {
-    line[n_read - 1] = '\0';
-    printf("%s", line);
-    r = rpn_solve(line);
+    expr[n_read - 1] = '\0';
+    printf("%s", expr);
+    r = rpn_solve(expr);
     printf(" = %g\n", r);
   }
   if (errno)
@@ -42,7 +42,7 @@ main (void)
     fprintf(stderr, "Error while reading \"%s\" file.\n", file_name);
     exit(errno);
   }
-  free(line);
+  free(expr);
   fclose(fp);
   return 0;
 }
