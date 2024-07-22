@@ -23,7 +23,7 @@
  *    + [ ] Log file.
  *  - [ ] Use errno.h, errno, strerror()
  *    + [] Add error code defines and error messages.
- *  - [ ] Make it ready for VCS.
+ *  - [x] Make it ready for VCS.
  *  - [ ] Support multi-digits operand.
  *  - [ ] Support multi-types of parentheses.
  *  - [ ] Support function operators (sin, cos, .etc)?

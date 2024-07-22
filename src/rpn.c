@@ -15,7 +15,7 @@
 #include "rpn.h"
 
 /* Depends on where the progam are invoked. */
-const char *file_name = "expressions.in";
+const char *file_name = "tests.in";
 
 int
 main (void)
