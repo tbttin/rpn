@@ -2,12 +2,20 @@
 
 - Inside the _rpn_ top level directory:
 
-  ```shell
-  make
-  ```
+```shell
+make
+```
 
 ## Run
 
-  ```shell
-  ./build/rpn
-  ```
+```shell
+./build/rpn
+```
+
+or
+
+
+```shell
+make run
+```
+

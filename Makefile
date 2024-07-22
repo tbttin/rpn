@@ -46,7 +46,7 @@ sources  := $(wildcard $(src_dir)/*.c)
 headers  := $(wildcard $(incl_dir)/*.h)
 objs     := $(patsubst $(src_dir)/%.c,$(obj_dir)/%.o,$(sources))
 
-prog := $(bld_dir)/rpn
+prog := $(bld_dir)/$(notdir $(CURDIR:%/=%))
 tags := tags
 
 # Default goals.
