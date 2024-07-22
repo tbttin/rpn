@@ -6,6 +6,8 @@
 
   + Multiple digits number (floating point)
 
+  + Opearators
+
   + Parentheses
 
   + Unary operator (-)
@@ -53,14 +55,15 @@ make run
 - Data type (`Node`) and `Stack` are separable.
 
 - Yeah, I decided to avoid **dynamic** memory allocation, it require
-  a lot of memory management.
+  a lot of (multi-layers) memory management.
 
-  I chose to stick with static memory, it so simple.
+  I chose to stick with **automatic** memory allocation and **static**
+  memory allocation, they are simple.
 
 - Operation orders in mathematics and in computer are not the same,
   there is no "standard rule".
 
-  But there may have one: whenever it is ambiguous, just use
+  But there might have one: whenever it is ambiguous, just use
   parentheses.
 
 - Working with mathematics expression, it reinforces my mathematics area
