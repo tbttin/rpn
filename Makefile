@@ -42,12 +42,11 @@ bld_dir  := build
 obj_dir  := $(bld_dir)/obj
 dep_dir  := $(bld_dir)/dep
 dirs     := $(bld_dir) $(obj_dir) $(dep_dir)
-# TODO: Wildcard is necessary?
 sources  := $(wildcard $(src_dir)/*.c)
 headers  := $(wildcard $(incl_dir)/*.h)
 objs     := $(patsubst $(src_dir)/%.c,$(obj_dir)/%.o,$(sources))
 
-prog := $(bld_dir)/prog
+prog := $(bld_dir)/rpn
 tags := tags
 
 # Default goals.
@@ -75,9 +74,7 @@ endif
 run: $(prog)
 	@$(prog) $(RUN_ARGS) --
 
-# Threads?
 debug: distclean
-# Using private modifier to suppress prerequisite inheritance.
 debug: CFLAGS += $(DBGCFLAGS)
 debug: all
 
@@ -88,9 +85,6 @@ distclean:
 
 .PHONY: all $(tags) debug run clean distclean
 
-# TODO:
-# make run RUN_ARGS="--foo=bar --bar=baz"
-#
 # If the first argument is "run"...
 ifeq '$(firstword $(MAKECMDGOALS))' 'run'
 # use the rest as arguments for "run"
@@ -101,17 +95,4 @@ RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 #   shell mean "NOP" (no op, a do-nothing operation).
 $(eval $(RUN_ARGS): ; @:)
 endif
-
-## Some notes
-#
-# Debugging makefile
-# make --question --print-data-base 2>&1 | less
-# make -d or make --debug=[abvijmn] 2>&1 | less
-#
-# $(warning warn: '$(filter-out all,$(MAKECMDGOALS))')
-# $(info info: 'bla blah')
-#
-# Log a long-run makefile
-# make -k > build.log 2>&1
-
 
