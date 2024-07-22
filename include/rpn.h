@@ -24,7 +24,7 @@
  *  - [ ] Use errno.h, errno, strerror()
  *    + [] Add error code defines and error messages.
  *  - [x] Make it ready for VCS.
- *  - [ ] Support multi-digits operand.
+ *  - [x] Support multi-digits operand.
  *  - [ ] Support multi-types of parentheses.
  *  - [ ] Support function operators (sin, cos, .etc)?
  */
@@ -147,6 +147,19 @@ rpn_c_to_str(char *pc, char c)
   return pc;
 }
 
+double
+rpn_get_opd(const char *str, char **endptr)
+{
+  double d;
+  d = strtod(str, endptr);
+  if (errno == ERANGE)
+  {
+    fprintf(stderr, "The expression contains really big number.\n");
+    exit(EXIT_FAILURE);
+  }
+  return d;
+}
+
 static void
 rpn_in_to_post(const char *expr, Stack *postfix_stack)
 {
@@ -155,6 +168,7 @@ rpn_in_to_post(const char *expr, Stack *postfix_stack)
   Opd_Opr opd_opr, prev_opd_opr;
   int opr;
   char opr_str[8] = "\0";
+  char *endptr;
   s_init(&oprs_stack);
   for (pc = expr; *pc; pc++)
   {
@@ -165,7 +179,8 @@ rpn_in_to_post(const char *expr, Stack *postfix_stack)
     if (*pc >= '0' && *pc <= '9')
     {
       opd_opr.op_type = TYPE_OPD;
-      opd_opr.opd_opr = *pc - '0';
+      opd_opr.opd_opr = rpn_get_opd(pc, &endptr);
+      pc = endptr - 1; /* pc++ later in for loop */
       s_push(postfix_stack, &opd_opr);
     }
     /* if function, push to operator stack */
