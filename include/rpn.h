@@ -148,7 +148,7 @@ rpn_c_to_str(char *pc, char c)
 }
 
 double
-rpn_get_opd(const char *str, char **endptr)
+rpn_str_to_opd(const char *str, char **endptr)
 {
   double d;
   d = strtod(str, endptr);
@@ -179,7 +179,7 @@ rpn_in_to_post(const char *expr, Stack *postfix_stack)
     if (*pc >= '0' && *pc <= '9')
     {
       opd_opr.op_type = TYPE_OPD;
-      opd_opr.opd_opr = rpn_get_opd(pc, &endptr);
+      opd_opr.opd_opr = rpn_str_to_opd(pc, &endptr);
       pc = endptr - 1; /* pc++ later in for loop */
       s_push(postfix_stack, &opd_opr);
     }
