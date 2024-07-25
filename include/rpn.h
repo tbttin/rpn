@@ -8,25 +8,51 @@
 #include "op.h"
 #include "stack.h"
 
+enum erro {
+  ERR_NONE,
+  ERR_UNMATCH,
+  ERR_OVER_FLOW,
+  ERR_INVAL_OPR,
+  ERR_DIV_ZERO,
+  ERR_INVAL_ERRON,
+  ERR_COUNT,
+};
+
+static char *errors[ERR_COUNT] = {
+  [ERR_NONE]        = "",
+  [ERR_UNMATCH]     = "The expression contains unmatched parentheses.\n",
+  [ERR_OVER_FLOW]   = "The expression contains really big number.\n",
+  [ERR_INVAL_OPR]   = "The expression contains invalid operators.\n",
+  [ERR_DIV_ZERO]    =  "Devided by zero!\n",
+  [ERR_INVAL_ERRON] = "Invalid error number.\n",
+};
+
+enum erro erron = 0;
+
 /*
  * TODO:
  *  - [x] Enumerize operators.
  *  - [x] Add operator properties.
  *  - [x] Support unary minus operator.
  *    + Redesign unary relations?
- *  - [ ] Add more comments.
- *  - [ ] Add debuging utilities.
+ *  - [x] Add more comments.
+ *  - [ ] Add debugging utilities.
  *    + [ ] Command line args support.
  *    + [ ] Enable/disable debug with command line option or environment
  *    variables.
- *    + [ ] Debug level as a flag to enable debugin a specific function.
+ *    + [ ] Debug level as a flag to enable debugging a specific function.
  *    + [ ] Log file.
  *  - [ ] Use errno.h, errno, strerror()
  *    + [] Add error code defines and error messages.
  *  - [x] Make it ready for VCS.
  *  - [x] Support multi-digits operand.
- *  - [ ] Support multi-types of parentheses.
+ *  - [ ] Implicit multiplication
+ *    + 2(3+4)5
+ *    + (1+2)(2+3)
+ *    + Whenever there is no operator, it is multiplication?
  *  - [ ] Support function operators (sin, cos, .etc)?
+ *  - [ ] Support portability.
+ *  - [ ] A development branch.
  */
 
 static const Opr_Prop oprs[OPR_COUNT] = { /* Operator properties. */
@@ -111,7 +137,7 @@ rpn_trans_or_not(Opr a, Opr b)
  * If oppr_cmp is NULL, transfer all ops from scr to dest.
  * Otherwise use opr_cmp to compare opr with opr on top of src.
  */
-static void
+static int
 rpn_transfer(Stack *src, Stack *dest,
          int (*opr_cmp)(Opr, Opr),
          Opr opr)
@@ -131,12 +157,12 @@ rpn_transfer(Stack *src, Stack *dest,
       if (top->op_type == TYPE_OPR
           && (Opr)top->opd_opr == OPR_O_PAR)
       {
-        fprintf(stderr, "Error: The expression contains unmatched open parentheses.\n");
-        exit(EXIT_FAILURE);
+        return ERR_UNMATCH;
       }
       s_push(dest, s_pop(src));
     }
   }
+  return ERR_NONE;
 }
 
 static char *
@@ -150,17 +176,17 @@ rpn_c_to_str(char *pc, char c)
 double
 rpn_str_to_opd(const char *str, char **endptr)
 {
-  double d;
-  d = strtod(str, endptr);
+  double opd;
+  opd = strtod(str, endptr);
   if (errno == ERANGE)
   {
-    fprintf(stderr, "The expression contains really big number.\n");
-    exit(EXIT_FAILURE);
+    erron = ERR_OVER_FLOW;
+    return 0.0;
   }
-  return d;
+  return opd;
 }
 
-static void
+static int
 rpn_in_to_post(const char *expr, Stack *postfix_stack)
 {
   const char *pc;
@@ -180,6 +206,10 @@ rpn_in_to_post(const char *expr, Stack *postfix_stack)
     {
       opd_opr.op_type = TYPE_OPD;
       opd_opr.opd_opr = rpn_str_to_opd(pc, &endptr);
+      if (erron)
+      {
+        return erron;
+      }
       pc = endptr - 1; /* pc++ later in for loop */
       s_push(postfix_stack, &opd_opr);
     }
@@ -206,12 +236,15 @@ rpn_in_to_post(const char *expr, Stack *postfix_stack)
         }
         else
         {
-          fprintf(stderr, "Error: The expression contains invalid operators.\n");
-          exit(EXIT_FAILURE);
+          return ERR_INVAL_OPR;
           /* return error code */
         }
       }
-      rpn_transfer(&oprs_stack, postfix_stack, &rpn_trans_or_not, opr);
+      int ret = rpn_transfer(&oprs_stack, postfix_stack, &rpn_trans_or_not, opr);
+      if (ret)
+      {
+        return ret;
+      }
       opd_opr.op_type = TYPE_OPR;
       opd_opr.opd_opr = opr;
       s_push(&oprs_stack, &opd_opr);
@@ -238,8 +271,7 @@ rpn_in_to_post(const char *expr, Stack *postfix_stack)
       }
       else
       {
-        fprintf(stderr, "Error: The expression contains unmatched close parentheses.\n");
-        exit(EXIT_FAILURE);
+        return ERR_UNMATCH;
       }
       /* if there is a function at the top of operator stack, transfer */
     }
@@ -252,7 +284,7 @@ rpn_in_to_post(const char *expr, Stack *postfix_stack)
       rpn_display(postfix_stack);
     }
   }
-  rpn_transfer(&oprs_stack, postfix_stack, NULL, '\0');
+  return rpn_transfer(&oprs_stack, postfix_stack, NULL, '\0');
 }
 
 static double
@@ -271,6 +303,11 @@ rpn_cal(Opr opr, double a, double b)
       r = a * b;
       break;
     case OPR_DIV:
+      if (b == 0.0)
+      {
+        erron = ERR_DIV_ZERO;
+        return 0;
+      }
       r = a / b;
       break;
     case OPR_POW:
@@ -304,12 +341,20 @@ rpn_solve_posfix(Stack *postfix_stack)
       {
         a = s_pop(&opds_stack)->opd_opr;
         r = rpn_cal((Opr)top_postfix->opd_opr, a, 0.0);
+        if (erron)
+        {
+          return 0.0;
+        }
       }
       else
       {
         b = s_pop(&opds_stack)->opd_opr;
         a = s_pop(&opds_stack)->opd_opr;
         r = rpn_cal((Opr)top_postfix->opd_opr, a, b);
+        if (erron)
+        {
+          return 0.0;
+        }
       }
       Opd_Opr opd = {
         .op_type = TYPE_OPD,
@@ -333,12 +378,41 @@ double
 rpn_solve(const char *expr)
 {
   Stack postfix_stack, inverted_p_s;
+  int ret;
   s_init(&postfix_stack);
-  rpn_in_to_post(expr, &postfix_stack);
+  ret = rpn_in_to_post(expr, &postfix_stack);
+  if (ret)
+  {
+    erron = ret;
+    return 0.0;
+  }
   s_init(&inverted_p_s);
-  rpn_transfer(&postfix_stack, &inverted_p_s, NULL, '\0');
+  ret = rpn_transfer(&postfix_stack, &inverted_p_s, NULL, '\0');
+  if (ret)
+  {
+    erron = ret;
+    return 0.0;
+  }
   return rpn_solve_posfix(&inverted_p_s);
 }
 
+char *
+rpn_err_str(int err_num)
+{
+  if (err_num >= 0 && err_num <= ERR_COUNT)
+  {
+    return errors[err_num];
+  }
+  else
+  {
+    erron = ERR_INVAL_ERRON;
+    return NULL;
+  }
+}
+
+void rpn_err_clear()
+{
+  erron = ERR_NONE;
+}
 #endif /* _RPN_H_INCLUDED_ */
 
