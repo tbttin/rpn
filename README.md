@@ -21,7 +21,7 @@
 - Example
 
 ```console
-rpn $ make run
+tbttin@arch:rpn $ make run
 +-22.5+-40.0 = -62.5
 3+4*2/(1-5)^2^3 = 3.00012
 -1+2+-1-(-3) = 3
