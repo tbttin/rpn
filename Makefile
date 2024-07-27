@@ -1,40 +1,12 @@
-# Features:
-#   - Automatically generate and include dependencies.
-#   - Clean project structure:
-#     (tree --charset=ascii --dirsfirst)
-#     .
-#     |-- build
-#     |   |-- dep
-#     |   |   |-- main.d
-#     |   |   `-- defs.d
-#     |   |-- obj
-#     |   |   |-- main.o
-#     |   |   `-- defs.o
-#     |   `-- prog
-#     |-- include
-#     |   |
-#     |   `--defs.h
-#     |-- src
-#     |   |-- main.c
-#     |   |-- defs.c
-#     |-- Makefile
-#     `-- tags
-
 CC            := /usr/bin/gcc
 CFLAGS        += -pedantic -Wall -Wextra -Wshadow -Wconversion \
                  -Wstrict-overflow=5 -Wformat=2 -Wfloat-equal
-# -O3
 DBGCFLAGS     += -g
-# -DNDEBUG
 OUTPUT_OPTION  = -MMD -MP -MF $(dep_dir)/$*.d -o $(obj_dir)/$*.o
 COMPILE.c      = $(CC) $(CFLAGS) $(OUTPUT_OPTION) -I $(incl_dir) -c
-LINK.c        := $(CC) -lm
+LDLIBS        += -lm
+LINK.c        := $(CC) $(LDLIBS)
 MAKEFLAGS     += --no-builtin-rules --no-builtin-variables
-
-rm    := /usr/bin/rm --recursive --force
-mkdir := /usr/bin/mkdir --parents
-# Use --kinds-c=+p to include all function prototypes in header files.
-ctags := /usr/bin/ctags
 
 src_dir  := src
 incl_dir := include
@@ -45,15 +17,16 @@ dirs     := $(bld_dir) $(obj_dir) $(dep_dir)
 sources  := $(wildcard $(src_dir)/*.c)
 headers  := $(wildcard $(incl_dir)/*.h)
 objs     := $(patsubst $(src_dir)/%.c,$(obj_dir)/%.o,$(sources))
+prog     := $(bld_dir)/$(notdir $(CURDIR:%/=%))
+tags     := tags
+rm       := /usr/bin/rm -r -f
+mkdir    := /usr/bin/mkdir -p
+ctags    := /usr/bin/ctags
 
-prog := $(bld_dir)/$(notdir $(CURDIR:%/=%))
-tags := tags
-
-# Default goals.
 all: $(tags) $(prog)
 
-$(tags):
-	@$(ctags) $(sources) $(headers)
+$(tags): $(sources) $(headers)
+	@$(ctags) -f $@ $(sources) $(headers)
 
 $(prog): $(objs)
 	$(LINK.c) -o $@ $^
@@ -67,14 +40,14 @@ $(dirs):
 # If the make "goal" is irrelevant don't include dependency files.
 # TODO: makefiles remake makes 'make --just-print' suck.
 #   Reproduce: make clean && make --just-print
-ifeq '$(filter-out all,$(MAKECMDGOALS))' ''
+ifeq '$(filter-out all run $(prog),$(MAKECMDGOALS))' ''
 -include $(patsubst $(src_dir)/%.c,$(dep_dir)/%.d,$(sources))
 endif
 
 run: $(prog)
 	@$(prog) $(RUN_ARGS) --
 
-debug: distclean
+debug: clean
 debug: CFLAGS += $(DBGCFLAGS)
 debug: all
 
@@ -83,7 +56,7 @@ clean:
 distclean:
 	$(rm) -- $(bld_dir)/ $(tags)
 
-.PHONY: all $(tags) debug run clean distclean
+.PHONY: all debug run clean distclean
 
 # If the first argument is "run"...
 ifeq '$(firstword $(MAKECMDGOALS))' 'run'
