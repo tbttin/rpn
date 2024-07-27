@@ -6,26 +6,15 @@
 
   + Multiple digits number (floating point)
 
-  + Opearators
+  + Opearators (+, -, unary -, unary +, *, /)
 
   + Parentheses
-
-  + Unary operator (-)
 
   Plus:
 
   + Invalid parentheses check
 
   + Invalid operators check
-
-- Example
-
-```console
-tbttin@arch:rpn $ make run
-+-22.5+-40.0 = -62.5
-3+4*2/(1-5)^2^3 = 3.00012
--1+2+-1-(-3) = 3
-```
 
 # Build
 
@@ -53,6 +42,8 @@ make run
   can hold both _operands_ (numbers) and _operators_ (operator ids).
 
 - Data type (`Node`) and `Stack` are separable.
+
+  + `stack.h` can be use as a library.
 
 - Yeah, I decided to avoid **dynamic** memory allocation, it require
   a lot of (multi-layers) memory management.
