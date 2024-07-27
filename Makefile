@@ -14,9 +14,10 @@ bld_dir  := build
 obj_dir  := $(bld_dir)/obj
 dep_dir  := $(bld_dir)/dep
 dirs     := $(bld_dir) $(obj_dir) $(dep_dir)
-sources  := $(wildcard $(src_dir)/*.c)
 headers  := $(wildcard $(incl_dir)/*.h)
+sources  := $(wildcard $(src_dir)/*.c)
 objs     := $(patsubst $(src_dir)/%.c,$(obj_dir)/%.o,$(sources))
+deps     := $(patsubst $(src_dir)/%.c,$(dep_dir)/%.d,$(sources))
 prog     := $(bld_dir)/$(notdir $(CURDIR:%/=%))
 tags     := tags
 rm       := /usr/bin/rm -r -f
@@ -37,12 +38,8 @@ $(obj_dir)/%.o $(dep_dir)/%.d&: $(src_dir)/%.c | $(dirs)
 $(dirs):
 	@$(mkdir) -- $@
 
-# If the make "goal" is irrelevant don't include dependency files.
-# TODO: makefiles remake makes 'make --just-print' suck.
-#   Reproduce: make clean && make --just-print
-ifeq '$(filter-out all run $(prog),$(MAKECMDGOALS))' ''
--include $(patsubst $(src_dir)/%.c,$(dep_dir)/%.d,$(sources))
-endif
+# Prevent remaking trick, include dependency files only if they exist.
+-include $(wildcard $(deps))
 
 run: $(prog)
 	@$(prog) $(RUN_ARGS) --
