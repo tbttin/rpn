@@ -38,8 +38,7 @@ $(obj_dir)/%.o $(dep_dir)/%.d&: $(src_dir)/%.c | $(dirs)
 $(dirs):
 	@$(mkdir) -- $@
 
-# Prevent remaking trick, include dependency files only if they exist.
--include $(wildcard $(deps))
+include $(wildcard $(deps))
 
 run: $(prog)
 	@$(prog) $(RUN_ARGS) --
