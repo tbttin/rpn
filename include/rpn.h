@@ -23,37 +23,11 @@ static char *errors[ERR_COUNT] = {
   [ERR_UNMATCH]     = "The expression contains unmatched parentheses.\n",
   [ERR_OVER_FLOW]   = "The expression contains really big number.\n",
   [ERR_INVAL_OPR]   = "The expression contains invalid operators.\n",
-  [ERR_DIV_ZERO]    =  "Devided by zero!\n",
+  [ERR_DIV_ZERO]    = "Devided by zero!\n",
   [ERR_INVAL_ERRON] = "Invalid error number.\n",
 };
 
 enum erro erron = 0;
-
-/*
- * TODO:
- *  - [x] Enumerize operators.
- *  - [x] Add operator properties.
- *  - [x] Support unary minus operator.
- *    + Redesign unary relations?
- *  - [x] Add more comments.
- *  - [ ] Add debugging utilities.
- *    + [ ] Command line args support.
- *    + [ ] Enable/disable debug with command line option or environment
- *    variables.
- *    + [ ] Debug level as a flag to enable debugging a specific function.
- *    + [ ] Log file.
- *  - [ ] Use errno.h, errno, strerror()
- *    + [] Add error code defines and error messages.
- *  - [x] Make it ready for VCS.
- *  - [x] Support multi-digits operand.
- *  - [ ] Implicit multiplication
- *    + 2(3+4)5
- *    + (1+2)(2+3)
- *    + Whenever there is no operator, it is multiplication?
- *  - [ ] Support function operators (sin, cos, .etc)?
- *  - [ ] Support portability.
- *  - [ ] A development branch.
- */
 
 static const Opr_Prop oprs[OPR_COUNT] = { /* Operator properties. */
   /*
@@ -414,5 +388,6 @@ void rpn_err_clear()
 {
   erron = ERR_NONE;
 }
+
 #endif /* _RPN_H_INCLUDED_ */
 

@@ -18,7 +18,7 @@
 
 # Build
 
-- Inside the _rpn_ top level directory:
+- On Linux (Arch Linux), inside the _rpn_ top level directory:
 
 ```shell
 make
@@ -35,6 +35,38 @@ or
 ```shell
 make run
 ```
+
+# TODO
+
+- [x] Support unary minus operator.
+
+  + Redesign unary relations?
+
+- [ ] Add debugging utilities.
+
+  + [ ] Command line args support.
+
+  + [ ] Enable/disable debug with command line option or environment
+    variables.
+
+  + [ ] Debug level as a flag to enable debugging a specific function.
+
+  + [ ] Log file.
+
+- [ ] Implicit multiplication
+
+  + 2(3+4)5
+
+  + (1+2)(2+3)
+
+  + Whenever there is no operator, it is multiplication?
+
+- [ ] Support function operators (sin, cos, .etc)?
+
+- [ ] Support portability.
+
+- [ ] A development branch.
+
 
 # What Did I Learn From Writing The rpn
 
