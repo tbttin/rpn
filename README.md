@@ -38,6 +38,8 @@ make run
 
 # TODO
 
+- [ ] Optional multi-threads.
+
 - [x] Support unary minus operator.
 
   + Redesign unary relations?
